@@ -207,7 +207,24 @@ def dump(args):
         key_type = deser_string(key)
 
         if key_type == b"acentry":
-            pass
+            account = deser_string(key)
+            number = int.from_bytes(key.read(8), byteorder="little")
+            version = int.from_bytes(value.read(4), byteorder="little")
+            amount = int.from_bytes(value.read(8), byteorder="little")
+            time = int.from_bytes(value.read(8), byteorder="little")
+            other_account = deser_string(value)
+            comment = deser_string(value)
+            print(
+                f"Unused (accounting entry): account={account}, number={number}, client version={version}, amount={amount}, time={time}, other_account={other_account}, comment={comment}"
+            )
+
+        elif key_type == b"acc":
+            account = deser_string(key)
+            version = int.from_bytes(value.read(4), byteorder="little")
+            pubkey = deser_string(value)
+            print(
+                f"Unused (account): account={account}, client version={version}, pubkey={pubkey}"
+            )
 
         elif key_type == b"activeexternalspk" or key_type == b"activeinternalspk":
             spkm_type = "External" if key_type == b"activeexternalspk" else "Internal"
@@ -217,15 +234,14 @@ def dump(args):
                 f"Active {spkm_type} ScriptPubKeyMan: output type={output_type} ({output_type_to_str(output_type)}), ScriptPubKeyMan ID={spkm_id.hex()}"
             )
 
-        elif key_type == b"bestblock_nomerkle":
+        elif key_type == b"bestblock_nomerkle" or key_type == b"bestblock":
             version = int.from_bytes(value.read(4), byteorder="little")
             block_hashes = []
             for _ in range(deser_compact_size(value)):
                 block_hashes.append(value.read(32).hex())
-            print(f"Best block (modern): dummy (version)={version}, block hashes={block_hashes}")
-
-        elif key_type == b"bestblock":
-            pass
+            print(
+                f"Best block (modern): dummy (version)={version}, block hashes={block_hashes}"
+            )
 
         elif key_type == b"ckey":
             pubkey = deser_string(key)
@@ -242,7 +258,7 @@ def dump(args):
 
         elif key_type == b"defaultkey":
             pubkey = deser_string(value)
-            print(f"Default key: pubkey={pubkey.hex()}")
+            print(f"Unused (default key): pubkey={pubkey.hex()}")
 
         elif key_type == b"destdata":
             address = deser_string(key)
@@ -342,7 +358,21 @@ def dump(args):
             print(f"Name: address={address}, label={label}")
 
         elif key_type == b"wkey":
-            pass
+            pubkey = deser_string(key)
+            der_privkey = deser_string(value)
+            time_created = int.from_bytes(value.read(8), byteorder="little")
+            time_expired = int.from_bytes(value.read(8), byteorder="little")
+            comment = deser_string(value)
+
+            privkey = None
+            if der_privkey[0:8] == b"\x30\x81\xd3\x02\x01\x01\x04\x20":
+                privkey = der_privkey[8:40]
+            elif der_privkey[0:9] == b"\x30\x82\x01\x13\x02\01\x01\x04\x20":
+                privkey = der_privkey[9:41]
+
+            print(
+                f"Unused (Expirable privkey): pubkey={pubkey.hex()}, raw={der_privkey.hex()}, actual privkey={privkey.hex() if privkey else 'N/A'}, time created={time_created}, time expired={time_expired}, comment={comment}"
+            )
 
         elif key_type == b"orderposnext":
             pos = int.from_bytes(value.read(8), byteorder="little")
@@ -364,8 +394,10 @@ def dump(args):
             purpose = deser_string(value)
             print(f"Purpose: address={address}, label={purpose}")
 
-        elif key_type == b"settings":
-            pass
+        elif key_type == b"setting":
+            setting_key = deser_string(key)
+            setting_value = deser_string(value)
+            print(f"Unused (setting): key={setting_key}, value={setting_value}")
 
         elif key_type == b"tx":
             txid = key.read(32)
