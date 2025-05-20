@@ -638,7 +638,7 @@ def export_privkeys(args):
         print(wif)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("file")
 

@@ -13,6 +13,8 @@ dependencies = [
     "secp256k1 (>=0.14.0,<0.15.0)"
 ]
 
+[project.scripts]
+wallet-manipulator = "wallet_manipulator:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
