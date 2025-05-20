@@ -482,14 +482,17 @@ def export_privkeys(args):
     for key, compressed in keys:
         if compressed:
             key += b"\x01"
-        # wif = b58_check_encode(b"\x80" + key)
-        wif = b58_check_encode(b"\xef" + key)
+        if args.testnet:
+            wif = b58_check_encode(b"\xef" + key)
+        else:
+            wif = b58_check_encode(b"\x80" + key)
         print(wif)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("file")
+    parser.add_argument("--testnet", help="Whether the wallet is for a test network (e.g. testnet3, testnet4, signet, regtest)", action="store_true")
 
     subparsers = parser.add_subparsers(required=True)
 
