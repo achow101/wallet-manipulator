@@ -2,6 +2,11 @@
 
 import hashlib
 
+from typing import (
+    List,
+)
+
+
 def b58_encode(b: bytes) -> str:
     """
     Encode bytes to a base58-encoded string
@@ -36,5 +41,3 @@ def b58_check_encode(b: bytes) -> str:
     checksum = hashlib.sha256(hashlib.sha256(b).digest()).digest()[0:4]
     data = b + checksum
     return b58_encode(data)
-
-
