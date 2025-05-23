@@ -28,8 +28,11 @@ def main():
     dump_parser = subparsers.add_parser("dump")
     dump_parser.set_defaults(func=_dump)
 
-    export_privkey_parser = subparsers.add_parser("exportprivkeys")
-    export_privkey_parser.set_defaults(func=_export_privkeys)
+    exports_parser = subparsers.add_parser("export")
+    exports_subparsers = exports_parser.add_subparsers(required=True)
+
+    export_privkeys_parser = exports_subparsers.add_parser("privkeys")
+    export_privkeys_parser.set_defaults(func=_export_privkeys)
 
     args = parser.parse_args()
     args.func(args)
