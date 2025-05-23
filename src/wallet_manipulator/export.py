@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import hashlib
+import json
 import sys
 
 from cryptography.hazmat.primitives.ciphers import (
@@ -20,12 +21,14 @@ from ._db import (
     is_bdb,
     is_sqlite,
 )
+from ._descriptors import descsum_create
 from ._serialize import (
+    deser_compact_size,
     deser_string,
 )
 
 
-def export_privkeys(file: str, testnet: bool):
+def export_privkeys(file: str, testnet: bool, output_importable: bool):
     if is_bdb(file):
         cursor = get_bdb_cursor(file)
     elif is_sqlite(file):
@@ -37,6 +40,7 @@ def export_privkeys(file: str, testnet: bool):
     keys = []
     ckeys = []
     enc_keys = []
+    oldest = None
 
     while True:
         record = cursor.next()
@@ -76,6 +80,20 @@ def export_privkeys(file: str, testnet: bool):
             iterations = int.from_bytes(value.read(4), byteorder="little")
             if derivation_method == 0:
                 enc_keys.append((encrypted_key, salt, iterations))
+
+        elif key_type == b"keymeta":
+            deser_string(key)
+            int.from_bytes(value.read(4), byteorder="little")
+            create_time = int.from_bytes(value.read(8), byteorder="little")
+            if oldest is None or create_time < oldest:
+                oldest = create_time
+            deser_string(value)
+            value.read(20)
+            value.read(4)
+            path_len = deser_compact_size(value)
+            for _ in range(path_len):
+                int.from_bytes(value.read(4), byteorder="little")
+            bool(int.from_bytes(value.read(1), byteorder="little"))
 
     if len(ckeys) > 0 and len(enc_keys) == 0:
         print("**********************************************")
@@ -122,6 +140,10 @@ def export_privkeys(file: str, testnet: bool):
         print("*****************************************")
         print()
 
+    if oldest is None:
+        oldest = 0
+
+    importable = []
     for key, compressed in keys:
         if compressed:
             key += b"\x01"
@@ -129,4 +151,10 @@ def export_privkeys(file: str, testnet: bool):
             wif = b58_check_encode(b"\xef" + key)
         else:
             wif = b58_check_encode(b"\x80" + key)
-        print(wif)
+        if output_importable:
+            importable.append({"desc": descsum_create(f"combo({wif})"), "timestamp": oldest})
+        else:
+            print(wif)
+
+    if output_importable:
+        print(json.dumps(importable, indent=2))
