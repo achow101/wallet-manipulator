@@ -4,7 +4,7 @@ import sys
 
 from io import BytesIO
 
-from ._base58 import b58_check_encode
+from ._base58 import check_encode
 from ._db import (
     get_bdb_cursor,
     get_sqlite_cursor,
@@ -302,7 +302,7 @@ def dump(file: str) -> None:
                 derivation_index = int.from_bytes(
                     derivation_index_bytes, byteorder="little"
                 )
-            xpub = b58_check_encode(b"\x04\x88\xb2\x1e" + deser_string(value))
+            xpub = check_encode(b"\x04\x88\xb2\x1e" + deser_string(value))
             print(
                 f"Descriptor Derived Key Cache: id={id.hex()}, expansion index={expansion_index}, derivation index={derivation_index if derivation_index_bytes else 'N/A'}, xpub={xpub}"
             )
@@ -310,7 +310,7 @@ def dump(file: str) -> None:
         elif key_type == b"walletdescriptorlhcache":
             id = key.read(32)
             expansion_index = int.from_bytes(key.read(4), byteorder="little")
-            xpub = b58_check_encode(b"\x04\x88\xb2\x1e" + deser_string(value))
+            xpub = check_encode(b"\x04\x88\xb2\x1e" + deser_string(value))
             print(
                 f"Descriptor Derived Key Cache: id={id.hex()}, expansion index={expansion_index}, xpub={xpub}"
             )

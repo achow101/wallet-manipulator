@@ -14,7 +14,7 @@ from io import BytesIO
 from secp256k1 import PrivateKey
 
 
-from ._base58 import b58_check_encode
+from ._base58 import check_encode
 from ._db import (
     get_bdb_cursor,
     get_sqlite_cursor,
@@ -148,9 +148,9 @@ def export_privkeys(file: str, testnet: bool, output_importable: bool):
         if compressed:
             key += b"\x01"
         if testnet:
-            wif = b58_check_encode(b"\xef" + key)
+            wif = check_encode(b"\xef" + key)
         else:
-            wif = b58_check_encode(b"\x80" + key)
+            wif = check_encode(b"\x80" + key)
         if output_importable:
             importable.append({"desc": descsum_create(f"combo({wif})"), "timestamp": oldest})
         else:
