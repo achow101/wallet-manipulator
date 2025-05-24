@@ -331,6 +331,9 @@ def export_descriptors(file: str, testnet: bool, output_importable: bool):
             xprv = check_encode(xprv_bytes)
             descriptor = descriptor.replace(xpub, xprv)
 
+        # Replace all ' with h
+        descriptor = descriptor.replace("'", "h")
+
         # Remove and recalculate the checksum
         descriptor = descsum_create(descriptor.split("#")[0])
 
