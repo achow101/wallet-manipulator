@@ -18,12 +18,6 @@ class Cursor:
     def next(self) -> Optional[Tuple[bytes, bytes]]:
         pass
 
-    def is_done(self) -> bool:
-        pass
-
-    def close(self) -> None:
-        pass
-
 
 class BDBCursor(Cursor):
     def __init__(self, db) -> None:
@@ -37,10 +31,6 @@ class BDBCursor(Cursor):
                 return
             yield ret
 
-    def close(self) -> bool:
-        self.dbc.close()
-        self.dbc = None
-
 
 class SQLiteCursor(Cursor):
     def __init__(self, conn: sqlite3.Connection) -> None:
@@ -52,9 +42,6 @@ class SQLiteCursor(Cursor):
             if ret is None:
                 return
             yield ret
-
-    def close(self) -> None:
-        self.cursor.close()
 
 
 def is_bdb(file: str) -> bool:
