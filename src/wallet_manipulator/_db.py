@@ -29,13 +29,13 @@ class BDBCursor(Cursor):
     def __init__(self, db) -> None:
         self.db = db
         self.dbc = self.db.cursor()
-        self.done = False
 
     def next(self) -> Optional[Tuple[bytes, bytes]]:
-        ret = self.dbc.next()
-        if ret is None:
-            self.done = True
-        return ret
+        while True:
+            ret = self.dbc.next()
+            if ret is None:
+                return
+            yield ret
 
     def close(self) -> bool:
         self.dbc.close()
@@ -45,13 +45,13 @@ class BDBCursor(Cursor):
 class SQLiteCursor(Cursor):
     def __init__(self, conn: sqlite3.Connection) -> None:
         self.cursor = conn.execute("SELECT key, value FROM main")
-        self.done = False
 
     def next(self) -> Optional[Tuple[bytes, bytes]]:
-        ret = self.cursor.fetchone()
-        if ret is None:
-            self.done = True
-        return ret
+        while True:
+            ret = self.cursor.fetchone()
+            if ret is None:
+                return
+            yield ret
 
     def close(self) -> None:
         self.cursor.close()

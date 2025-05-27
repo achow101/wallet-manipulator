@@ -40,11 +40,7 @@ def dump(file: str) -> None:
         print("Not a recognized wallet database file")
         sys.exit(-1)
 
-    while True:
-        record = cursor.next()
-        if record is None:
-            break
-
+    for record in cursor.next():
         key = BytesIO(record[0])
         value = BytesIO(record[1])
 

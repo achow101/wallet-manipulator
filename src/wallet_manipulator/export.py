@@ -60,11 +60,7 @@ def export_privkeys(file: str, testnet: bool, output_importable: bool):
     enc_keys = []
     oldest = None
 
-    while True:
-        record = cursor.next()
-        if record is None:
-            break
-
+    for record in cursor.next():
         key = BytesIO(record[0])
         value = BytesIO(record[1])
 
@@ -189,11 +185,7 @@ def export_descriptors(file: str, testnet: bool, output_importable: bool):
     enc_keys = []
     descriptors = []
 
-    while True:
-        record = cursor.next()
-        if record is None:
-            break
-
+    for record in cursor.next():
         key = BytesIO(record[0])
         value = BytesIO(record[1])
 
