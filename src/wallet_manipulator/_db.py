@@ -3,12 +3,13 @@
 import sqlite3
 import sys
 
-from berkeleydb import db as bdb
-
 from typing import (
+    Dict,
     Optional,
     Tuple,
 )
+
+from ._bdb import dump_bdb_kv
 
 
 class Cursor:
@@ -20,16 +21,12 @@ class Cursor:
 
 
 class BDBCursor(Cursor):
-    def __init__(self, db) -> None:
-        self.db = db
-        self.dbc = self.db.cursor()
+    def __init__(self, records: Dict[bytes, bytes]) -> None:
+        self.records = records
 
     def next(self) -> Optional[Tuple[bytes, bytes]]:
-        while True:
-            ret = self.dbc.next()
-            if ret is None:
-                return
-            yield ret
+        for rec in self.records.items():
+            yield rec
 
 
 class SQLiteCursor(Cursor):
@@ -58,12 +55,7 @@ def is_sqlite(file: str) -> bool:
 
 
 def get_bdb_cursor(file):
-    if bdb.version() != (4, 8, 30):
-        print("berkeleydb must be linked with BerkeleyDB 4.8.30")
-        sys.exit(-1)
-    db = bdb.DB(dbEnv=None, flags=0)
-    db.open(file, dbname="main")
-    return BDBCursor(db)
+    return BDBCursor(dump_bdb_kv(file))
 
 
 def get_sqlite_cursor(file):
