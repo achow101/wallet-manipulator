@@ -80,7 +80,5 @@ def get_bdb_cursor(file):
 
 
 def get_sqlite_cursor(file):
-    import sqlite3
-
     conn = sqlite3.connect(file)
     return SQLiteCursor(conn)
